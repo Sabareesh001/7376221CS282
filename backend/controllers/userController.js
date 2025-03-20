@@ -37,7 +37,9 @@ exports.topUsers = async (req, res) => {
 
 
 exports.topLatestPosts = async(req, res) => {
-    const {type} = req.params;
+    try{
+
+    const {type} = req.query;
     const resData={};
     const testServer = process.env.TEST_SERVER;
     const authResponse = await axios.post(`${testServer}/test/auth`, process.env.CREDENTIALS);
@@ -59,11 +61,32 @@ exports.topLatestPosts = async(req, res) => {
              AllPosts.push({...(posts.data.posts[index]),"name":usersResponse.data.users[id],commentsCount : comments.data.comments.length});
         }
     }
+
     if(type=='latest'){
-        
+        AllPosts.sort((a,b)=>{
+            if(Number(a.id)>=Number(b.id)){
+             return -1;
+            }
+            else{
+             return 1;
+            }
+         })
     }
     else{
-
+        AllPosts.sort((a,b)=>{
+            if(Number(a.commentsCount)>=Number(b.commentsCount)){
+             return -1;
+            }
+            else{
+             return 1;
+            }
+         })
     }
     res.send(AllPosts);
+}
+    catch (error) {
+        console.error("Error fetching data:", error.message);
+        res.status(500).json({ message: "An error occurred while fetching data." });
+    }
 };
+
